@@ -1,13 +1,13 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS
 import cv2
 import mediapipe as mp
 import numpy as np
 import pickle
-import time
+import os
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
 # Load trained model safely
 try:
@@ -21,10 +21,10 @@ except Exception as e:
 
 # Labels dictionary
 labels_dict = {
-    0: 'ક', 1: 'ખ', 2: 'ગ', 3: 'ઘ', 4: 'ચ', 5: 'છ', 6: 'જ', 7: 'ઝ', 8: 'ટ', 9: 'ઠ', 
-    10: 'ડ', 11: 'ઢ', 12: 'ણ', 13: 'ત', 14: 'થ', 15: 'દ', 16: 'ધ', 17: 'ન', 18: 'પ', 
-    19: 'ફ', 20: 'બ', 21: 'ભ', 22: 'મ', 23: 'ય', 24: 'ર', 25: 'લ', 26: 'વ', 27: 'શ', 
-    28: 'ષ', 29: 'સ', 30: 'હ', 31: 'ળ', 32: 'ક્ષ', 33: 'જ્ઞ' 
+    0: 'ક', 1: 'ખ', 2: 'ગ', 3: 'ઘ', 4: 'ચ', 5: 'છ', 6: 'જ', 7: 'ઝ', 8: 'ટ', 9: 'ઠ',
+    10: 'ડ', 11: 'ઢ', 12: 'ણ', 13: 'ત', 14: 'થ', 15: 'દ', 16: 'ધ', 17: 'ન', 18: 'પ',
+    19: 'ફ', 20: 'બ', 21: 'ભ', 22: 'મ', 23: 'ય', 24: 'ર', 25: 'લ', 26: 'વ', 27: 'શ',
+    28: 'ષ', 29: 'સ', 30: 'હ', 31: 'ળ', 32: 'ક્ષ', 33: 'જ્ઞ'
 }
 
 # Initialize MediaPipe
@@ -67,7 +67,6 @@ def predict():
             if len(data_aux) == 42:  # Ensure correct feature size
                 prediction = model.predict([np.asarray(data_aux)])
                 predicted_character = labels_dict.get(int(prediction[0]), "Unknown")
-
                 return jsonify({'prediction': predicted_character})
 
         return jsonify({'prediction': 'No hand detected'})
@@ -77,4 +76,5 @@ def predict():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port, debug=True)
